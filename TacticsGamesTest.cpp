@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <algorithm>
 #include <SFML/OpenGL.hpp>
 
 std::vector<sf::Texture> loadTileSet(const std::string& fileName, int tileSize);
@@ -11,26 +10,32 @@ std::vector<sf::Sprite> createTileSprites(const std::vector<sf::Texture>& tiles)
 
 int main()
 {
-
+    sf::RenderWindow window(sf::VideoMode(800, 600), "TacticsGamesTest");
     std::vector<sf::Texture> tileSet = loadTileSet("basicTileSet.png", 16);
     std::vector<sf::Sprite> tileSprites = createTileSprites(tileSet);
-    sf::RenderWindow mainWindow(sf::VideoMode(800, 600), "My Window");
 
 
-    while (mainWindow.isOpen()) {
+    while (window.isOpen()) {
         sf::Event event;
-        while (mainWindow.pollEvent(event)) {
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                mainWindow.close();
+                window.close();
             }
 
         }
-        mainWindow.clear();
+        window.clear();
+        float xOffset = 0.0f;
 
-        for (const auto& sprite : tileSprites) {
-            mainWindow.draw(sprite);
+        for (auto& sprite : tileSprites) {
+            sprite.setPosition(xOffset, 0.0f);
+            window.draw(sprite);
+            xOffset += sprite.getGlobalBounds().width;
         }
-        mainWindow.display();
+
+        /*for (const auto& sprite : tileSprites) {
+            window.draw(sprite);
+        }*/
+        window.display();
     }
 return 0;
 }
@@ -61,8 +66,16 @@ std::vector<sf::Texture> loadTileSet(const std::string& fileName, int tileSize) 
         int y = (i / numOfTilesY) * tileSize;
 
         sf::Texture tile;
-        tile.create(tileSize, tileSize);
-        tile.loadFromImage(tileSetImage, sf::IntRect(x,y,tileSize,tileSize));
+        if (!tile.create(tileSize, tileSize)) {
+            std::cout << "Error creating a tile texture" << std::endl;
+            return{};
+        }
+        if (!tile.loadFromImage(tileSetImage, sf::IntRect(x, y, tileSize, tileSize))) {
+            std::cout << "Error loading tile texture from image" << std::endl;
+            return{};
+        }
+        /*tile.create(tileSize, tileSize);
+        tile.loadFromImage(tileSetImage, sf::IntRect(x,y,tileSize,tileSize));*/
         tiles[i] = tile;
     }
     return tiles;
