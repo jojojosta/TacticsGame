@@ -63,7 +63,7 @@ std::vector<sf::Texture> loadTileSet(const std::string& fileName, int tileSize) 
     //load each tile into a texture
     for (int i = 0; i < numOfTiles; i++) {
         int x = (i % numOfTilesX) * tileSize;
-        int y = (i / numOfTilesY) * tileSize;
+        int y = (i / numOfTilesX) * tileSize;
 
         sf::Texture tile;
         if (!tile.create(tileSize, tileSize)) {
