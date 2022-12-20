@@ -4,9 +4,12 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <vector>
+#include <SFML/Graphics/Transformable.hpp>
 
 std::vector<sf::Texture> loadTileSet(const std::string& fileName, int tileSize);
 std::vector<sf::Sprite> createTileSprites(const std::vector<sf::Texture>& tiles);
+std::vector<std::vector<sf::Sprite>> createMap(int width, int height, const std::vector<sf::Sprite>& sprites);
 
 int main()
 {
@@ -14,6 +17,8 @@ int main()
     std::vector<sf::Texture> tileSet = loadTileSet("basicTileSet.png", 16);
     std::vector<sf::Sprite> tileSprites = createTileSprites(tileSet);
 
+    //generate the map using the createMap function
+    std::vector<std::vector<sf::Sprite>> map = createMap(20, 20, tileSprites);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -24,13 +29,24 @@ int main()
 
         }
         window.clear();
-        float xOffset = 0.0f;
 
-        for (auto& sprite : tileSprites) {
+        /*sf::Transform isoTransform;
+        isoTransform.translate(window.getSize().x / 2, window.getSize().y / 2);
+        isoTransform.rotate(-45.0f);
+        isoTransform.scale(0.5f,0.5f);*/
+
+        for (int x = 0; x < map.size(); x++) {
+            for (int y = 0; y < map[x].size(); y++) {
+                sf::Sprite& sprite = map[x][y];
+                window.draw(sprite);
+            }
+        }
+
+        /*for (auto& sprite : tileSprites) {
             sprite.setPosition(xOffset, 0.0f);
             window.draw(sprite);
             xOffset += sprite.getGlobalBounds().width;
-        }
+        }*/
 
         /*for (const auto& sprite : tileSprites) {
             window.draw(sprite);
@@ -90,4 +106,20 @@ std::vector<sf::Sprite> createTileSprites(const std::vector<sf::Texture>& tiles)
         sprites.push_back(sprite);
     }
     return sprites;
+}
+
+std::vector<std::vector<sf::Sprite>> createMap(int width, int height, const std::vector<sf::Sprite>& sprites) {
+    std::vector<std::vector<sf::Sprite>> map(width, std::vector<sf::Sprite>(height));
+
+    int value = 0;
+
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            sf::Sprite& sprite = map[x][y];
+            sprite = sprites[value];
+            sprite.setPosition(x * sprite.getGlobalBounds().width, y * sprite.getGlobalBounds().height);
+            value = (value + 1) % sprites.size();
+        }
+    }
+    return map;
 }
