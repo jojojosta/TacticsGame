@@ -6,6 +6,7 @@
 #include <SFML/OpenGL.hpp>
 #include <vector>
 #include <SFML/Graphics/Transformable.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
 
 std::vector<sf::Texture> loadTileSet(const std::string& fileName, int tileSize);
 std::vector<sf::Sprite> createTileSprites(const std::vector<sf::Texture>& tiles);
@@ -30,23 +31,41 @@ int main()
         }
         window.clear();
 
-        /*sf::Transform isoTransform;
-        isoTransform.translate(window.getSize().x / 2, window.getSize().y / 2);
-        isoTransform.rotate(-45.0f);
-        isoTransform.scale(0.5f,0.5f);*/
+        // Create a vertex array to hold the quad data
+        sf::VertexArray quads(sf::Quads, map.size() * map[0].size() * 4);
 
+        // Bind the texture to the render states
+        sf::RenderStates states;
+        sf::Texture& texture = tileSet[0]; // select the first texture in the tile set
+        states.texture = &texture;
+
+        sf::Transform transform;
+        transform.translate(window.getSize().x / 2, window.getSize().y / 2);
+        transform.rotate(-45.0f);
+        transform.scale(0.5f, 0.5f);
+        states.transform = transform;
+
+        // Fill the vertex array with quad data and texture coordinates
         for (int x = 0; x < map.size(); x++) {
             for (int y = 0; y < map[x].size(); y++) {
-                sf::Sprite& sprite = map[x][y];
-                window.draw(sprite);
+                // Add the quad vertices to the vertex array
+                quads[(x + y * map.size()) * 4 + 0].position = sf::Vector2f(x * 16, y * 16);
+                quads[(x + y * map.size()) * 4 + 1].position = sf::Vector2f((x + 1) * 16, y * 16);
+                quads[(x + y * map.size()) * 4 + 2].position = sf::Vector2f((x + 1) * 16, (y + 1) * 16);
+                quads[(x + y * map.size()) * 4 + 3].position = sf::Vector2f(x * 16, (y + 1) * 16);
+
+                // Add the texture coordinates to the vertex array
+                quads[(x + y * map.size()) * 4 + 0].texCoords = sf::Vector2f(0.f, 0.f);
+                quads[(x + y * map.size()) * 4 + 1].texCoords = sf::Vector2f(16.f, 0.f);
+                quads[(x + y * map.size()) * 4 + 2].texCoords = sf::Vector2f(16.f, 16.f);
+                quads[(x + y * map.size()) * 4 + 3].texCoords = sf::Vector2f(0.f, 16.f);
             }
         }
 
-        /*for (auto& sprite : tileSprites) {
-            sprite.setPosition(xOffset, 0.0f);
-            window.draw(sprite);
-            xOffset += sprite.getGlobalBounds().width;
-        }*/
+        // Draw the vertex array on the window using the render states
+        window.draw(quads, states);
+
+
 
         /*for (const auto& sprite : tileSprites) {
             window.draw(sprite);
